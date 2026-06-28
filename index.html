@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>boxd — compute boxes over SSH</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<meta name="description" content="boxd — compute boxes over SSH. ssh box@box.hopbox.dev spawns a Firecracker microVM the moment you connect: a real Linux kernel, hardware-isolated, sub-second boot. Your SSH key is your identity — no signup, no console, no dashboard.">
+<meta name="theme-color" content="#07090b">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://box.hopbox.dev/">
+<meta property="og:title" content="boxd — compute boxes over SSH">
+<meta property="og:description" content="ssh box@box.hopbox.dev spawns a Firecracker microVM the moment you connect. Real VMs, sub-second boot, durable disk. Your SSH key is your identity.">
+<meta property="og:image" content="https://box.hopbox.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="boxd — compute boxes over SSH">
+<meta name="twitter:description" content="ssh box@box.hopbox.dev spawns a Firecracker microVM the moment you connect. Real VMs, sub-second boot, durable disk. Your SSH key is your identity.">
+<meta name="twitter:image" content="https://box.hopbox.dev/og.png">
+<style>
+  :root{ --bg:#07090b; --panel:#0d1013; --line:rgba(255,255,255,.08); --ink:#eef4f1; --muted:#8fa39b; --accent:#27d3a2; --accent2:#62e8c2; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,'Cascadia Code',Consolas,monospace;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .glow{position:absolute;border-radius:50%;filter:blur(150px)}
+  .g1{width:640px;height:640px;top:-28%;right:-10%;background:rgba(39,211,162,.16)}
+  .g2{width:520px;height:520px;bottom:-22%;left:-12%;background:rgba(98,232,194,.08)}
+  .grid{position:absolute;inset:0;
+    background-image:
+      repeating-linear-gradient(0deg,var(--line) 0 1px,transparent 1px 24px),
+      repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 24px);
+    -webkit-mask-image:radial-gradient(ellipse 85% 55% at 50% 0,#000,transparent 78%);
+    mask-image:radial-gradient(ellipse 85% 55% at 50% 0,#000,transparent 78%);opacity:.5}
+  .wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 28px}
+  header{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:18px;letter-spacing:-.01em}
+  .brand img{width:28px;height:28px}
+  .brand .dim{color:var(--muted);font-weight:500}
+  .nav{display:flex;gap:6px;align-items:center}
+  .nav a{color:var(--muted);font-size:14px;font-weight:500;padding:9px 13px;border-radius:9px}
+  .nav a:hover{color:var(--ink);background:rgba(255,255,255,.05)}
+  .nav .ghub{border:1px solid var(--line);border-radius:9px}
+  .herowrap{display:grid;grid-template-columns:1.02fr .98fr;gap:48px;align-items:center;padding:48px 0 24px}
+  .herowrap>*{min-width:0}
+  @media(max-width:900px){.herowrap{grid-template-columns:1fr;gap:28px;padding:30px 0 8px}}
+  .badge{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);border:1px solid var(--line);padding:6px 13px;border-radius:999px;background:rgba(255,255,255,.02)}
+  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+  h1{font-size:clamp(36px,5vw,58px);line-height:1.04;letter-spacing:-.035em;font-weight:800;margin:22px 0 0}
+  h1 .grad{background:linear-gradient(110deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:22px;font-size:clamp(16px,2.2vw,19px);color:var(--muted);max-width:580px;line-height:1.6}
+  .herocmd{margin-top:30px;display:flex;align-items:center;gap:10px;background:#0a0d10;border:1px solid var(--line);border-radius:12px;padding:13px 13px 13px 16px;width:100%;max-width:520px;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+  .herocmd code{flex:1;min-width:0;font:15px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:#dceee7;white-space:nowrap;overflow-x:auto;scrollbar-width:none;letter-spacing:-.01em}
+  .herocmd code::-webkit-scrollbar{display:none}
+  .herocmd code::before{content:"$ ";color:var(--accent)}
+  .herocmd .copy{flex:none;width:38px;height:38px;display:grid;place-items:center;padding:0;color:#08130f;background:linear-gradient(110deg,var(--accent),var(--accent2));border:none;border-radius:9px;cursor:pointer}
+  .herocmd .copy:hover{filter:brightness(1.08)}
+  .herocmd .copy .i-ok{display:none}
+  .herocmd .copy.ok .i-copy{display:none}
+  .herocmd .copy.ok .i-ok{display:block}
+  .tryit{margin-top:14px;font-size:13.5px;color:var(--muted)}
+  .tryit code{color:var(--accent2)}
+  /* terminal */
+  .term{margin:0;border:1px solid var(--line);border-radius:14px;background:#0a0d10;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+  .term .bar{display:flex;align-items:center;gap:7px;padding:12px 15px;border-bottom:1px solid var(--line)}
+  .term .bar i{width:11px;height:11px;border-radius:50%;background:#26302c}
+  .term .bar span{margin-left:8px;font-size:12px;color:var(--muted)}
+  .term pre{margin:0;padding:20px 22px;font:13px/1.85 ui-monospace,SFMono-Regular,Menlo,monospace;color:#dceee7;min-height:228px;overflow-x:auto}
+  .term .c{color:#5f7068}.term .p{color:var(--accent2)}.term .o{color:#7fe3c0}.term .w{color:#e6c878}
+  .term .line{display:block;opacity:0;animation:show .25s forwards}
+  .l1{animation-delay:.3s}.l2{animation-delay:1.0s}.l3{animation-delay:1.7s}.l4{animation-delay:2.4s}.l5{animation-delay:3.1s}.l6{animation-delay:3.8s}.l7{animation-delay:4.5s}
+  .cursor{display:inline-block;width:8px;height:15px;background:var(--accent2);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+  @keyframes show{to{opacity:1}}@keyframes blink{50%{opacity:0}}
+  /* section headings */
+  .sec{padding:54px 0 8px}
+  .sec h2{font-size:clamp(24px,3vw,32px);letter-spacing:-.025em;font-weight:800}
+  .sec .lead{color:var(--muted);font-size:15px;margin-top:10px;max-width:640px}
+  /* flow */
+  .flow{display:flex;align-items:stretch;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:30px}
+  .step{flex:1;min-width:200px;padding:20px 18px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.025),transparent);position:relative}
+  .step .n{font-size:12px;color:var(--accent);font-weight:700;letter-spacing:.04em}
+  .step h3{font-size:15px;margin-top:9px;letter-spacing:-.01em}
+  .step p{font-size:13px;color:var(--muted);margin-top:7px}
+  /* features */
+  .feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:30px}
+  .card{padding:22px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.022),transparent)}
+  .card .k{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:rgba(39,211,162,.13);color:var(--accent2);font-size:16px;margin-bottom:13px;font-weight:700}
+  .card h3{font-size:15px;letter-spacing:-.01em}
+  .card p{font-size:13.5px;color:var(--muted);margin-top:7px;line-height:1.6}
+  .card code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:#dceee7;background:#0a0d10;border:1px solid var(--line);padding:1px 6px;border-radius:6px;white-space:nowrap}
+  /* install */
+  .install{margin:34px 0 8px;border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:28px;display:flex;gap:22px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .install h3{font-size:19px;letter-spacing:-.02em}
+  .install p{color:var(--muted);font-size:14px;margin-top:6px;max-width:440px}
+  .install .right{flex:1;min-width:280px}
+  .install code{display:block;font:13px/1.6 ui-monospace,monospace;color:#dceee7;background:#0a0d10;border:1px solid var(--line);padding:14px 16px;border-radius:11px;white-space:nowrap;overflow-x:auto}
+  .install code::before{content:"$ ";color:var(--accent)}
+  .install .os{margin-top:10px;font-size:13px;color:var(--muted)}
+  .install .os a{color:var(--accent2)}
+  footer{border-top:1px solid var(--line);margin-top:60px;padding:30px 0;color:var(--muted);font-size:13.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  footer a:hover{color:var(--ink)}
+  footer .links a{margin-left:16px}
+  @media(max-width:600px){
+    .wrap{padding:0 18px}
+    header{padding:16px 0}
+    .brand{font-size:16px}
+    .nav a{padding:8px 8px;font-size:12.5px}
+    h1{font-size:34px}
+    .herocmd{max-width:none}
+    .herocmd code{font-size:14px}
+    .term pre{font-size:11.5px;line-height:1.8;padding:16px 16px;min-height:auto}
+    .sec{padding:42px 0 4px}
+    .install{padding:20px}
+    footer{flex-direction:column;gap:9px;text-align:center}
+    footer .links a{margin:0 8px}
+  }
+</style>
+</head>
+<body>
+<div class="bg"><div class="grid"></div><div class="glow g1"></div><div class="glow g2"></div></div>
+<div class="wrap">
+  <header>
+    <div class="brand"><img src="logo.svg" alt=""><span>boxd<span class="dim"> · hopbox</span></span></div>
+    <nav class="nav"><a href="https://docs.hopbox.dev">Docs</a><a class="ghub" href="https://github.com/hopboxdev/hopbox">★ GitHub</a></nav>
+  </header>
+
+  <div class="herowrap">
+  <section class="hero">
+    <span class="badge"><span class="dot"></span> Live · open source · self-hostable</span>
+    <h1>Compute boxes<br><span class="grad">over SSH.</span></h1>
+    <p class="sub">One <code style="font-family:inherit;color:var(--ink)">ssh</code> and a Firecracker microVM boots the instant you connect — a real Linux kernel, hardware-isolated, sub-second. Your SSH key <em>is</em> your identity. No signup, no console, no dashboard.</p>
+    <div class="herocmd">
+      <code id="cmd">ssh box@box.hopbox.dev</code>
+      <button class="copy" aria-label="Copy ssh command" onclick="navigator.clipboard.writeText(document.getElementById('cmd').textContent);this.classList.add('ok');setTimeout(()=>this.classList.remove('ok'),1600)">
+        <svg class="i-copy" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <svg class="i-ok" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l5 5L20 6"/></svg>
+      </button>
+    </div>
+    <p class="tryit">Try it right now, no account: <code>ssh demo@box.hopbox.dev</code></p>
+  </section>
+
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i><span>box.hopbox.dev</span></div>
+    <pre><span class="line l1"><span class="p">$</span> ssh box@box.hopbox.dev</span><span class="line l2"><span class="c">  spawning microVM · firecracker · isolated</span></span><span class="line l3"><span class="o">  ✓ booted in 0.4s — Linux 6.1 · 2 vCPU · 1 GiB</span></span><span class="line l4"><span class="p">box@box</span>:~$ uname -r && docker run hello-world</span><span class="line l5"><span class="o">  6.1.0  ·  Hello from Docker!</span></span><span class="line l6"><span class="c">  # disconnect → auto-suspends to disk; reconnect → restored</span></span><span class="line l7"><span class="p">box@box</span>:~$ <span class="cursor"></span></span></pre>
+  </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="sec" id="how">
+    <h2>How it works</h2>
+    <p class="lead">No provisioning step, no waiting on a queue. The connection <em>is</em> the lifecycle.</p>
+    <div class="flow">
+      <div class="step"><div class="n">01 · CONNECT</div><h3>ssh box@…</h3><p>Your public key is your identity. Per-owner box names: your <code style="font-size:12px">myproject</code> is yours alone.</p></div>
+      <div class="step"><div class="n">02 · BOOT</div><h3>microVM spawns</h3><p>A Firecracker microVM boots in well under a second — a real kernel, hardware-isolated, not a container.</p></div>
+      <div class="step"><div class="n">03 · SUSPEND</div><h3>idle → snapshot</h3><p>Disconnect and the box auto-suspends: memory + state snapshot to disk. Nothing burning while you're away.</p></div>
+      <div class="step"><div class="n">04 · RESUME</div><h3>reconnect, restored</h3><p>The next connection restores the snapshot instantly. Your durable disk is exactly where you left it.</p></div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="sec" id="features">
+    <h2>What's in the box</h2>
+    <p class="lead">Real virtualization, terminal-native ergonomics, secure by default.</p>
+    <div class="feat">
+      <div class="card"><div class="k">▣</div><h3>Real VMs, not containers</h3><p>Firecracker microVMs with their own Linux kernel. Run Docker, nested workloads, even load kernel modules — hardware isolation, not namespaces.</p></div>
+      <div class="card"><div class="k">⏸</div><h3>Sub-second pause / resume</h3><p>Idle boxes snapshot memory and state to disk and auto-suspend; the next SSH restores them instantly. You only pay attention when you're connected.</p></div>
+      <div class="card"><div class="k">⛁</div><h3>Durable disk</h3><p>Your disk survives suspend/resume, daemon restarts, and host reboots. Pick up exactly where you left off.</p></div>
+      <div class="card"><div class="k">⊞</div><h3>Image catalog</h3><p>Boot from a tooled base: <code>ssh proj:ubuntu-22.04@box.hopbox.dev</code> or <code>proj:debian-12@…</code>. List them with <code>ssh images@box.hopbox.dev</code> — git, vim, curl, tmux included.</p></div>
+      <div class="card"><div class="k">⌥</div><h3>Ephemeral by default</h3><p>A fresh throwaway box, reaped a couple of minutes after you disconnect. Register your key for the persistent tier when you want it to stick.</p></div>
+      <div class="card"><div class="k">⚷</div><h3>Your key is your identity</h3><p>No web dashboard, no cloud console, no signup form. The SSH key in your agent is the whole auth story — per-owner box names keep them separate.</p></div>
+      <div class="card"><div class="k">⌘</div><h3>box-guest + MCP</h3><p>An in-box CLI — <code>box-guest info</code>, keep-alive, idle tuning — and an MCP server (<code>box-guest mcp</code>) so an AI agent inside the box can manage its own sandbox.</p></div>
+      <div class="card"><div class="k">⛨</div><h3>Secure by default</h3><p>Per-box network isolation and an egress firewall out of the box. Each box is sealed off from the others and from the host.</p></div>
+    </div>
+  </section>
+
+  <!-- RUN YOUR OWN -->
+  <section class="sec" id="selfhost">
+    <h2>Run your own</h2>
+    <div class="install">
+      <div>
+        <h3>Host boxd yourself</h3>
+        <p>One command on a KVM-capable Linux host stands up the boxd daemon. It's open source — bring your own hardware.</p>
+      </div>
+      <div class="right">
+        <code id="ins">curl -fsSL https://box.hopbox.dev/install.sh | sudo sh</code>
+        <p class="os">Source &amp; issues on <a href="https://github.com/hopboxdev/hopbox">GitHub</a> · docs at <a href="https://docs.hopbox.dev">docs.hopbox.dev</a></p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>© boxd — part of <a href="https://hopbox.dev" style="color:var(--accent2)">hopbox</a></span>
+    <span class="links"><a href="https://docs.hopbox.dev">Docs</a><a href="https://github.com/hopboxdev/hopbox">GitHub</a><a href="https://hopbox.dev">hopbox.dev</a></span>
+  </footer>
+</div>
+</body>
+</html>
