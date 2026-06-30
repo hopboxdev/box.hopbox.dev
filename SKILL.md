@@ -15,7 +15,7 @@ ssh myproject@box.hopbox.dev                       # spawn an Ubuntu microVM, dr
 ssh myproject:debian-12@box.hopbox.dev             # pick the Debian image instead
 ssh images@box.hopbox.dev                          # list available images (spawns no box)
 ssh myproject@box.hopbox.dev "python3 file.py"     # run a one-off command, capture stdout
-scp ./app.py myproject@box.hopbox.dev:             # copy a file in (sftp works too)
+scp ./app.py myproject@box.hopbox.dev:             # copy a file in (sftp / rsync work too)
 ```
 
 Boxes are **ephemeral**: reaped a couple of minutes after you disconnect.
@@ -108,16 +108,14 @@ registered keys), not on the public box.hopbox.dev demo.
 
 ## File transfer
 
-`scp` and `sftp` work — paths are relative to the box home:
+`scp`, `sftp`, and `rsync` work — paths are relative to the box home:
 
 ```bash
 scp -r ./src myproject@box.hopbox.dev:src     # copy a tree in
 scp myproject@box.hopbox.dev:out.tgz .        # copy results out
+rsync -az ./ myproject@box.hopbox.dev:proj/   # sync a directory
 sftp myproject@box.hopbox.dev                 # interactive
 ```
-
-For a whole directory you can also stream a tarball:
-`tar czf - ./src | ssh myproject@box.hopbox.dev "tar xzf -"`.
 
 ## What a box gives you
 
@@ -125,7 +123,7 @@ For a whole directory you can also stream a tarball:
   Docker, nested workloads, and kernel modules that containers can't.
 - **Root** in the box, a clean home, internet egress (the box can reach the
   public internet; a default egress firewall blocks the host's other services).
-- Sub-second boot; SSH-native (interactive shells, one-off `exec`, scp/sftp).
+- Sub-second boot; SSH-native (interactive shells, clean one-off `exec`, scp/sftp/rsync).
 
 ## Run your own
 
