@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="20%" cy="26%" r="62%">
+      <stop offset="0%" stop-color="#27d3a2" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#27d3a2" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="92%" cy="96%" r="55%">
+      <stop offset="0%" stop-color="#1ea585" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#1ea585" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="word" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eef4f1"/>
+      <stop offset="100%" stop-color="#62e8c2"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#07090b"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+  <rect x="6" y="6" width="1188" height="618" rx="20" fill="none" stroke="#27d3a2" stroke-opacity="0.14" stroke-width="2"/>
+
+  <!-- brand: the teal isometric cube + wordmark -->
+  <g transform="translate(92,78) scale(3.4)">
+    <path d="M16 4 27 10 16 16 5 10Z" fill="#7fe3c0"/>
+    <path d="M5 10 16 16 16 28 5 22Z" fill="#34c8a0"/>
+    <path d="M27 10 16 16 16 28 27 22Z" fill="#1ea585"/>
+    <path d="M9.6 11.4 13 13.6 9.6 15.8" fill="none" stroke="#0b0a12" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="224" y="172" font-family="Helvetica,Arial,sans-serif" font-size="96" font-weight="700" fill="url(#word)">boxd</text>
+
+  <text x="92" y="312" font-family="Helvetica,Arial,sans-serif" font-size="64" font-weight="700" fill="#eef4f1">Compute boxes over SSH</text>
+  <text x="92" y="364" font-family="Helvetica,Arial,sans-serif" font-size="30" fill="#8fa39b">A hardware-isolated Firecracker microVM the moment you connect.</text>
+
+  <!-- terminal pill with the command -->
+  <rect x="92" y="416" width="726" height="96" rx="16" fill="#0d1013" stroke="#27d3a2" stroke-opacity="0.55" stroke-width="1.6"/>
+  <text x="124" y="477" font-family="Menlo,'DejaVu Sans Mono',Consolas,monospace" font-size="42"><tspan fill="#27d3a2">$ </tspan><tspan fill="#eef4f1">ssh box@box.hopbox.dev</tspan></text>
+
+  <text x="92" y="574" font-family="Menlo,'DejaVu Sans Mono',Consolas,monospace" font-size="27" fill="#8fa39b">box.hopbox.dev  ·  your SSH key is your identity  ·  no signup</text>
+</svg>
