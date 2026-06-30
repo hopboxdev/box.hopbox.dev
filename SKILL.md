@@ -11,11 +11,11 @@ purpose: `curl -fsSL https://box.hopbox.dev/SKILL.md`.
 ## Quick start
 
 ```bash
-ssh myproject@box.hopbox.dev                    # spawn an Ubuntu microVM, drop into a shell
-ssh myproject:debian-12@box.hopbox.dev          # pick the Debian image instead
-ssh images@box.hopbox.dev                       # list available images (spawns no box)
-scp ./file.py myproject@box.hopbox.dev:         # copy a file in (sftp / rsync work too)
-ssh myproject@box.hopbox.dev "python3 file.py"  # run a one-off command, capture stdout
+ssh myproject@box.hopbox.dev                       # spawn an Ubuntu microVM, drop into a shell
+ssh myproject:debian-12@box.hopbox.dev             # pick the Debian image instead
+ssh images@box.hopbox.dev                          # list available images (spawns no box)
+ssh myproject@box.hopbox.dev "python3 file.py"     # run a one-off command, capture stdout
+ssh myproject@box.hopbox.dev "cat > app.py" < app.py   # copy a file in (stream over ssh)
 ```
 
 Boxes are **ephemeral**: reaped a couple of minutes after you disconnect.
@@ -99,7 +99,7 @@ so the box isn't reaped mid-task, or `box_info` to check how idle it is.
 box.hopbox.dev boxes are **ephemeral** — reaped a couple of minutes after you
 disconnect; nothing survives between sessions there. Keep the same box by
 reconnecting within the grace window, extending it (`ssh name+1h@…` or
-`box-guest keep-alive 1h`), or scp'ing artifacts out before you leave.
+`box-guest keep-alive 1h`), or streaming artifacts out before you leave.
 
 A **persistent tier** exists in boxd — boxes auto-suspend to disk when idle and
 wake instantly from a snapshot on reconnect, with a durable disk that survives
@@ -108,12 +108,17 @@ registered keys), not on the public box.hopbox.dev demo.
 
 ## File transfer
 
+The front door bridges shells and commands, so move files by streaming over the
+`ssh` command channel:
+
 ```bash
-scp -r ./src myproject@box.hopbox.dev:src              # copy a tree in
-ssh myproject@box.hopbox.dev "tar czf - out" > out.tgz # stream results out
-sftp myproject@box.hopbox.dev                          # interactive
-rsync -az ./ myproject@box.hopbox.dev:proj/            # sync
+ssh myproject@box.hopbox.dev "cat > app.py" < app.py      # one file in
+tar czf - ./src | ssh myproject@box.hopbox.dev "tar xzf -" # a tree in
+ssh myproject@box.hopbox.dev "tar czf - out" > out.tgz     # results out
 ```
+
+(Native `scp`/`sftp` is on the way — until then, the streaming forms above are
+the reliable way to copy in and out.)
 
 ## What a box gives you
 
@@ -121,7 +126,7 @@ rsync -az ./ myproject@box.hopbox.dev:proj/            # sync
   Docker, nested workloads, and kernel modules that containers can't.
 - **Root** in the box, a clean home, internet egress (the box can reach the
   public internet; a default egress firewall blocks the host's other services).
-- Sub-second boot; SSH-native (shell, `exec`, `scp`, `sftp`, agent-forwarding).
+- Sub-second boot; SSH-native (interactive shells and one-off `exec`).
 
 ## Run your own
 
