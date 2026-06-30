@@ -15,7 +15,7 @@ ssh myproject@box.hopbox.dev                       # spawn an Ubuntu microVM, dr
 ssh myproject:debian-12@box.hopbox.dev             # pick the Debian image instead
 ssh images@box.hopbox.dev                          # list available images (spawns no box)
 ssh myproject@box.hopbox.dev "python3 file.py"     # run a one-off command, capture stdout
-ssh myproject@box.hopbox.dev "cat > app.py" < app.py   # copy a file in (stream over ssh)
+scp ./app.py myproject@box.hopbox.dev:             # copy a file in (sftp / rsync work too)
 ```
 
 Boxes are **ephemeral**: reaped a couple of minutes after you disconnect.
@@ -108,17 +108,14 @@ registered keys), not on the public box.hopbox.dev demo.
 
 ## File transfer
 
-The front door bridges shells and commands, so move files by streaming over the
-`ssh` command channel:
+`scp`, `sftp`, and `rsync` work — paths are relative to the box home:
 
 ```bash
-ssh myproject@box.hopbox.dev "cat > app.py" < app.py      # one file in
-tar czf - ./src | ssh myproject@box.hopbox.dev "tar xzf -" # a tree in
-ssh myproject@box.hopbox.dev "tar czf - out" > out.tgz     # results out
+scp -r ./src myproject@box.hopbox.dev:src     # copy a tree in
+scp myproject@box.hopbox.dev:out.tgz .        # copy results out
+sftp myproject@box.hopbox.dev                 # interactive
+rsync -az ./ myproject@box.hopbox.dev:proj/   # sync
 ```
-
-(Native `scp`/`sftp` is on the way — until then, the streaming forms above are
-the reliable way to copy in and out.)
 
 ## What a box gives you
 
@@ -126,7 +123,7 @@ the reliable way to copy in and out.)
   Docker, nested workloads, and kernel modules that containers can't.
 - **Root** in the box, a clean home, internet egress (the box can reach the
   public internet; a default egress firewall blocks the host's other services).
-- Sub-second boot; SSH-native (interactive shells and one-off `exec`).
+- Sub-second boot; SSH-native (interactive shells, one-off `exec`, scp/sftp/rsync).
 
 ## Run your own
 
